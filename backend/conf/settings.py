@@ -8,7 +8,7 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == "True"
 
 ALLOWED_HOSTS = ['*']
 
@@ -22,7 +22,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -93,3 +93,5 @@ STATIC_URL = 'static/'
 STATIC_ROOT = "/static/" if not DEBUG else BASE_DIR / "static/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = "users.User"
