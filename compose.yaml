@@ -7,7 +7,7 @@ services:
     env_file:
       - ./backend/.env
     volumes:
-      - phone_referal_service_data:/var/lib/postgresql/data
+      - phone_referral_service_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -46,7 +46,7 @@ services:
 
 
 volumes:
-  phone_referal_service_data:
+  phone_referral_service_data:
     driver: local
   static:
     driver: local

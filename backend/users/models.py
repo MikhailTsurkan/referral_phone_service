@@ -26,6 +26,7 @@ class User(AbstractUser):
                                    )
     invited_by = models.ForeignKey("self",
                                    on_delete=models.SET_NULL,
+                                   related_name="referrals",
                                    verbose_name="invited by",
                                    help_text="reference on user, who invite this user",
                                    **NULL
