@@ -62,7 +62,7 @@ class SetRefererAPIView(views.APIView):
     def post(self, request):
         invite_code = request.data.get("invite_code")
         referral = request.user
-        if referral.invited_code == invite_code:
+        if referral.invite_code == invite_code:
             return Response({"message": "you cannot enter your own invite code"})
         if referral.invited_by is not None:
             return Response({"message": f"you have already been referral "
