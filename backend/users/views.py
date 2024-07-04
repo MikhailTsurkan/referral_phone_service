@@ -3,8 +3,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from users.serializers import UserPhoneSerializer, UserRetrieveSerializer
+from users.serializers import UserRetrieveSerializer, UserPhoneSerializer
 from django.contrib.auth import get_user_model
 
 from users.services import create_invite_code, send_code, create_one_time_code
@@ -19,9 +20,9 @@ class GetOrCreateModelMixin:
         serializer.is_valid(raise_exception=True)
         created = self.perform_get_or_create(serializer)
         if created:
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            headers = self.get_success_headers(request.data)
+            return Response(request.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(request.data, status=status.HTTP_200_OK)
 
     def perform_get_or_create(self, serializer):
         raise NotImplementedError
@@ -41,10 +42,11 @@ class UserReceivesCodeMixin(GetOrCreateModelMixin):
     serializer_class = UserPhoneSerializer
 
     def perform_get_or_create(self, serializer):
-        data = serializer.validated_data
-        user, created = self.model.objects.get_or_create(**data, defaults={"invite_code": create_invite_code()})
+
+        user, created = self.model.objects.get_or_create(**serializer.validated_data,
+                                                         defaults={"invite_code": create_invite_code()})
         code = create_one_time_code()
-        self.request.session["one_time_code"] = code
+        self.request.session[user.phone] = code
         send_code(user.phone, code)
 
         return created
@@ -60,7 +62,8 @@ class SetRefererAPIView(views.APIView):
     def post(self, request):
         invite_code = request.data.get("invite_code")
         referral = request.user
-
+        if referral.invited_code == invite_code:
+            return Response({"message": "you cannot enter your own invite code"})
         if referral.invited_by is not None:
             return Response({"message": f"you have already been referral "
                                         f"of user with invite code {referral.invited_by.invite_code}"})
@@ -74,6 +77,7 @@ class SetRefererAPIView(views.APIView):
 
 class UserRetrieveItSelfAPIView(generics.RetrieveAPIView):
     serializer_class = UserRetrieveSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_object(self):
         return self.request.user

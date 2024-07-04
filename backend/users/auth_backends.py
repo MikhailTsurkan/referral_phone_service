@@ -8,7 +8,7 @@ User = get_user_model()
 class OneTimeCodeBackend(BaseBackend):
     def authenticate(self, request, **kwargs):
         phone = kwargs.get("phone")
-        one_time_code = kwargs.get("one_time_code")
+        one_time_code = kwargs.get("password")
 
         if phone is None or one_time_code is None:
             return None
@@ -18,7 +18,7 @@ class OneTimeCodeBackend(BaseBackend):
         except User.DoesNotExist:
             return None
 
-        right_one_time_code = request.session.pop("one_time_code", None)
+        right_one_time_code = request.session.pop(phone, None)
         if one_time_code == right_one_time_code:
             return user
         return None

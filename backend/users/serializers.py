@@ -6,6 +6,8 @@ User = get_user_model()
 
 
 class UserPhoneSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField()
+
     class Meta:
         model = User
         fields = [
@@ -21,7 +23,10 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         return obj.referrals.values_list("phone", flat=True)
 
     def get_invited_by_code(self, obj):
-        return obj.invited_by.invite_code
+        referer = obj.invited_by
+        if referer:
+            return referer.invite_code
+        return None
 
     class Meta:
         model = User
