@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
-from users.serializers import SendCodeSerializer, UserRetrieveSerializer
+from users.serializers import UserPhoneSerializer, UserRetrieveSerializer
 from django.contrib.auth import get_user_model
 
 from users.services import create_invite_code, send_code, create_one_time_code
@@ -38,7 +38,7 @@ class GetOrCreateModelMixin:
 
 class UserReceivesCodeMixin(GetOrCreateModelMixin):
     model = User
-    serializer_class = SendCodeSerializer
+    serializer_class = UserPhoneSerializer
 
     def perform_get_or_create(self, serializer):
         data = serializer.validated_data
@@ -75,5 +75,5 @@ class SetRefererAPIView(views.APIView):
 class UserRetrieveItSelfAPIView(generics.RetrieveAPIView):
     serializer_class = UserRetrieveSerializer
 
-    def get_object(self):
+    def get_queryset(self):
         return self.request.user
