@@ -1,8 +1,10 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, views
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
-from users.serializers import SendCodeSerializer
+from users.serializers import SendCodeSerializer, UserRetrieveSerializer
 from django.contrib.auth import get_user_model
 
 from users.services import create_invite_code, send_code, create_one_time_code
@@ -50,3 +52,28 @@ class UserReceivesCodeMixin(GetOrCreateModelMixin):
 
 class UserReceivesCodeAPIView(UserReceivesCodeMixin, generics.GenericAPIView):
     pass
+
+
+class SetRefererAPIView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        invite_code = request.data.get("invite_code")
+        referral = request.user
+
+        if referral.invited_by is not None:
+            return Response({"message": f"you have already been referral "
+                                        f"of user with invite code {referral.invited_by.invite_code}"})
+
+        referer = get_object_or_404(User.objects.filter(invite_code=invite_code))
+
+        referral.invited_by = referer
+        referral.save()
+        return Response({"message": f"you have become referral of user with invite code {referer.invite_code}"})
+
+
+class UserRetrieveItSelfAPIView(generics.RetrieveAPIView):
+    serializer_class = UserRetrieveSerializer
+
+    def get_object(self):
+        return self.request.user

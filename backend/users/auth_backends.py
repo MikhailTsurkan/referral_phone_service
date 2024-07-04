@@ -18,7 +18,7 @@ class OneTimeCodeBackend(BaseBackend):
         except User.DoesNotExist:
             return None
 
-        right_one_time_code = request.session.get("one_time_code")
+        right_one_time_code = request.session.pop("one_time_code", None)
         if one_time_code == right_one_time_code:
             return user
         return None

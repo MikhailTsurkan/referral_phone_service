@@ -11,3 +11,9 @@ class SendCodeSerializer(serializers.ModelSerializer):
         fields = [
             "phone"
         ]
+
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
